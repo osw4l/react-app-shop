@@ -9,24 +9,25 @@ export default class ModalNavbar extends React.Component {
         super(props, context);
         this.state = {
             show: this.props.show,
-            shop_url: `${DOMAIN}/api/shop/sales/`,
-            shops: [],
-            current_shop: {products:[]},
+            purchase_url: `${DOMAIN}/api/shop/sales/`,
+            purchases: [],
+            current_purchase: {products:[]},
             show_modal_detail: false
         };
         this.handleShow = this.handleShow.bind(this);
         this.handleHide = this.handleHide.bind(this);
+        axios.defaults.headers.common['Authorization'] = `Token ${localStorage.getItem('token')}`;
     }
 
     componentWillMount() {
-        this.getShops();
+        this.getPurchases();
     }
 
-    getShops() {
-        axios.get(this.state.shop_url, {})
+    getPurchases() {
+        axios.get(this.state.purchase_url, {})
             .then(res => {
                 this.setState({
-                    shops: (res.data)
+                    purchases: (res.data)
                 });
             });
     }
@@ -46,10 +47,10 @@ export default class ModalNavbar extends React.Component {
         return (
             <div>
                 <Modal
-                    header='My shops'
+                    header='My purchases'
                     actions={
                         <Button onClick={this.handleHide}>
-                            Cerrar
+                            Close
                         </Button>
                     }
                     open={this.state.show}
@@ -67,33 +68,33 @@ export default class ModalNavbar extends React.Component {
                                     total
                                 </th>
                                 <th data-field="actions">
-                                    *
+                                    actions
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                        {this.state.shops.map((shop, index) => {
+                        {this.state.purchases.map((purchase, index) => {
                             return (
                                 <tr key={index}>
                                     <td>
-                                        {shop.date}
+                                        {purchase.date}
                                     </td>
                                     <td>
-                                        {shop.products_count}
+                                        {purchase.products_count}
                                     </td>
                                     <td>
-                                        $ {shop.total}
+                                        $ {purchase.total}
                                     </td>
                                     <td>
                                         <button className="btn-2 btn-info"
                                         onClick={()=> {
                                             this.setState({
-                                                current_shop: shop,
+                                                current_purchase: purchase,
                                                 show_modal_detail: true,
                                                 show: false
                                             });
                                         }}>
-                                            view detail <i className="fa fa-eye"></i>
+                                            see detail <i className="fa fa-eye"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -104,16 +105,16 @@ export default class ModalNavbar extends React.Component {
                 </Modal>
 
                 <Modal
-                    header='Shop detail'
+                    header='Purchase detail'
                     actions={
                         <Button onClick={()=> {
-                            this.getShops();
+                            this.getPurchases();
                             this.setState({
                                 show_modal_detail: false,
                                 show: true
                             });
                         }}>
-                            Cerrar
+                            Close
                         </Button>
                     }
                     open={this.state.show_modal_detail}
@@ -122,10 +123,10 @@ export default class ModalNavbar extends React.Component {
                     <Row>
                         <Col m={4}>
                             <h3>
-                                Total <span className="text-green">${this.state.current_shop.total}</span>
+                                Total <span className="text-green">${this.state.current_purchase.total}</span>
                             </h3>
                             <h4>
-                                Created <span className="text-green">{this.state.current_shop.date}</span>
+                                Created <span className="text-green">{this.state.current_purchase.date}</span>
                             </h4>
                         </Col>
                         <Col m={8}>
@@ -147,7 +148,7 @@ export default class ModalNavbar extends React.Component {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                {this.state.current_shop.products.map((product, index) => {
+                                {this.state.current_purchase.products.map((product, index) => {
                                     return (
                                         <tr key={index}>
                                             <td>

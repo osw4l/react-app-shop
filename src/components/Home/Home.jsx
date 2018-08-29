@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Col, Row, Icon, Table} from 'react-materialize';
+import {Col, Row, Table} from 'react-materialize';
 import axios from "axios/index";
 import './Home.css';
 import DOMAIN from "../constants";
@@ -10,7 +10,7 @@ export default class Home extends Component {
     constructor() {
         super();
         this.state = {
-            shop_url: `${DOMAIN}/api/shop/sales/`,
+            purchase_url: `${DOMAIN}/api/shop/sales/`,
             categories_url: `${DOMAIN}/api/shop/categories/`,
             categories: [],
             products_url: `${DOMAIN}/api/shop/products/`,
@@ -20,6 +20,7 @@ export default class Home extends Component {
             show_alert_success_send: false,
             show_alert_stock_empty: false
         };
+        axios.defaults.headers.common['Authorization'] = `Token ${localStorage.getItem('token')}`;
     }
 
     componentWillMount() {
@@ -28,7 +29,6 @@ export default class Home extends Component {
     }
 
     getCategories() {
-        axios.defaults.headers.common['Authorization'] = `Token ${localStorage.getItem('token')}`;
         axios.get(this.state.categories_url, {})
             .then(res => {
                 this.setState({
@@ -38,7 +38,6 @@ export default class Home extends Component {
     }
 
     getProducts() {
-        axios.defaults.headers.common['Authorization'] = `Token ${localStorage.getItem('token')}`;
         axios.get(this.state.products_url, {})
             .then(res => {
                 let products = res.data;
@@ -55,8 +54,7 @@ export default class Home extends Component {
     }
 
     onFilterByCategory(id){
-        axios.defaults.headers.common['Authorization'] = `Token ${localStorage.getItem('token')}`;
-        axios.get(`${DOMAIN}/api/shop/categories/${id}/products/`, {})
+        axios.get(`${DOMAIN}/api/shopping_cart/categories/${id}/products/`, {})
             .then(res => {
                 let products = res.data;
                 let data = [];
@@ -82,18 +80,18 @@ export default class Home extends Component {
 
     onAddToCart(id) {
         let dataset = this.state.products;
-        let shop = this.state.items;
+        let shopping_cart = this.state.items;
 
         if (dataset[id].stock > 0) {
-            if (shop[id] === undefined) {
-                shop[id] = {
+            if (shopping_cart[id] === undefined) {
+                shopping_cart[id] = {
                     id: dataset[id].id,
                     name: dataset[id].name,
                     price: dataset[id].price,
                     items: 0
                 };
             }
-            shop[id].items += 1;
+            shopping_cart[id].items += 1;
             dataset[id].stock -= 1;
         } else {
             this.setState({
@@ -103,39 +101,39 @@ export default class Home extends Component {
 
         this.setData(
             dataset,
-            shop
+            shopping_cart
         );
 
     }
 
     onClickRemove(id) {
         let dataset = this.state.products;
-        let shop = this.state.items;
+        let shopping_cart = this.state.items;
 
-        shop[id].items -= 1;
+        shopping_cart[id].items -= 1;
         dataset[id].stock += 1;
 
-        if (shop[id].items === 0) {
-            delete shop[id];
+        if (shopping_cart[id].items === 0) {
+            delete shopping_cart[id];
         }
 
         this.setData(
             dataset,
-            shop
+            shopping_cart
         );
     }
 
     onClickDelete(id) {
         let dataset = this.state.products;
-        let shop = this.state.items;
+        let shopping_cart = this.state.items;
 
-        dataset[id].stock += shop[id].items;
+        dataset[id].stock += shopping_cart[id].items;
 
-        delete shop[id];
+        delete shopping_cart[id];
 
         this.setData(
             dataset,
-            shop
+            shopping_cart
         );
     }
 
@@ -146,9 +144,9 @@ export default class Home extends Component {
 
     onCalculateTotal() {
         let total = 0;
-        let shop = this.state.items;
-        for (let item in shop){
-            total += (shop[item].price * shop[item].items);
+        let shopping_cart = this.state.items;
+        for (let item in shopping_cart){
+            total += (shopping_cart[item].price * shopping_cart[item].items);
         }
 
         this.setState({
@@ -156,10 +154,9 @@ export default class Home extends Component {
         });
     }
 
-    sendShop() {
+    sendPurchase() {
         console.log(this.state.items);
-        axios.defaults.headers.common['Authorization'] = `Token ${localStorage.getItem('token')}`;
-        axios.post(this.state.shop_url, this.state.items)
+        axios.post(this.state.purchase_url, this.state.items)
             .then(res => {
                 this.setState({
                     items: [],
@@ -242,7 +239,9 @@ export default class Home extends Component {
                                                     this,
                                                     product.id
                                                 )} className="waves-effect waves-light btn">
-                                                    Buy <Icon className="right">add_shopping_cart</Icon>
+                                                    <span>buy</span>
+                                                    <span>&nbsp;&nbsp;</span>
+                                                    <i className="fa fa-shopping-cart"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -261,8 +260,8 @@ export default class Home extends Component {
                             </Col>
                             {this.state.total !== "0" &&
                                 <Col m={4}>
-                                    <button onClick={this.sendShop.bind(this)}
-                                            className="btn-floating btn-login shop-button btn-float btn-large waves-effect waves-light green pulse"
+                                    <button onClick={this.sendPurchase.bind(this)}
+                                            className="btn-floating btn-login shopping_cart-button btn-float btn-large waves-effect waves-light green pulse"
                                             type="submit"
                                             name="action">
                                         <i className="material-icons">send</i>
