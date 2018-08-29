@@ -54,7 +54,7 @@ export default class Home extends Component {
     }
 
     onFilterByCategory(id){
-        axios.get(`${DOMAIN}/api/shopping_cart/categories/${id}/products/`, {})
+        axios.get(`${DOMAIN}/api/shop/categories/${id}/products/`, {})
             .then(res => {
                 let products = res.data;
                 let data = [];
