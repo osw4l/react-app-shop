@@ -155,7 +155,6 @@ export default class Home extends Component {
     }
 
     sendPurchase() {
-        console.log(this.state.items);
         axios.post(this.state.purchase_url, this.state.items)
             .then(res => {
                 this.setState({
